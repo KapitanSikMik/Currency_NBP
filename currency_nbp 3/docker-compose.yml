@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: nbp_database
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Admin123
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=currency_nbp.settings
+      - DATABASE_NAME=nbp_database
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=Admin123
+      - DATABASE_HOST=db
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./currency-nbp-frontend
+      dockerfile: Dockerfile
+    command: ng serve
+    volumes:
+      - ./currency-nbp-frontend:/app
+    ports:
+      - "4200:4200"
+
+volumes:
+  postgres_data:
